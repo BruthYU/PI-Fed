@@ -9,12 +9,14 @@ import struct
 import mlflow
 import optuna
 import torch
+import copy
 from omegaconf import DictConfig, OmegaConf
 from dataloader import get_shuffled_dataloder
 from utils import BColors, myprint as print, suggest_float, suggest_int
 from optuna import Trial
 import logging
 
+from clients import *
 def uuid(digits=4):
     if not hasattr(uuid, "uuid_value"):
         uuid.uuid_value = struct.unpack('I', os.urandom(4))[0] % int(10 ** digits)
@@ -81,6 +83,8 @@ def train(cfg: DictConfig):
     list__name = [dict__idx_task__dataloader[idx_task]['name'] for idx_task in range(num_tasks)]
     list__ncls = [dict__idx_task__dataloader[idx_task]['ncls'] for idx_task in range(num_tasks)]
     inputsize = dict__idx_task__dataloader[0]['inputsize']  # type: Tuple[int, ...]
+
+    task_train(dict__idx_task__dataloader, cfg.pi, None)
     pass
 
 @hydra.main(config_path='conf', config_name='config')
