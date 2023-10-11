@@ -2,7 +2,7 @@ import copy
 import clients.alg_client as alg_client
 import torch
 from omegaconf import DictConfig, OmegaConf
-
+from typing import *
 def switch_tag(num_clients, num_batches):
     tags = [0]
     for client_id in range(num_clients):
@@ -12,14 +12,14 @@ def switch_tag(num_clients, num_batches):
 
 
 
-def task_train(task__dataloader: dict, task_cfg: DictConfig, root_model):
-    num_clients = task_cfg.num_clients
+def task_train(task__dataloader: dict, cfg: DictConfig, client_cfg: Dict,root_state_dict):
+    num_clients = cfg.fed.num_clients
     assert num_clients > 0 , "At least one client is required."
     tags = switch_tag(num_clients,len(task__dataloader))
 
-    client = getattr(alg_client,task_cfg.alg)
+    client = getattr(alg_client, cfg.fed.alg)
 
-    current_client = client(root_model)
+    current_client = client(client_cfg,root_state_dict)
     client_models = []
     client_losses = []
 
@@ -29,7 +29,8 @@ def task_train(task__dataloader: dict, task_cfg: DictConfig, root_model):
             info = current_client.client_info()
             client_models.append(info['model'].state_dict())
             client_losses.append(info['loss'])
-            current_client = client(root_model)
+            current_client = client(client_cfg,root_state_dict)
+            torch.cuda.empty_cache()
     return client_models, client_losses
 
 

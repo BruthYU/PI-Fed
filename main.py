@@ -15,8 +15,8 @@ from dataloader import get_shuffled_dataloder
 from utils import BColors, myprint as print, suggest_float, suggest_int
 from optuna import Trial
 import logging
-
 from clients import *
+from models import *
 def uuid(digits=4):
     if not hasattr(uuid, "uuid_value"):
         uuid.uuid_value = struct.unpack('I', os.urandom(4))[0] % int(10 ** digits)
@@ -78,13 +78,37 @@ def load_dataloader(cfg: DictConfig) -> Dict[int, Dict[str, Any]]:
 
 
 def train(cfg: DictConfig):
+    print(f'device: {cfg.device}', bcolor=BColors.OKBLUE)
+    # load dataset
     dict__idx_task__dataloader = load_dataloader(cfg)
     num_tasks = len(dict__idx_task__dataloader.keys())
     list__name = [dict__idx_task__dataloader[idx_task]['name'] for idx_task in range(num_tasks)]
     list__ncls = [dict__idx_task__dataloader[idx_task]['ncls'] for idx_task in range(num_tasks)]
     inputsize = dict__idx_task__dataloader[0]['inputsize']  # type: Tuple[int, ...]
 
-    task_train(dict__idx_task__dataloader, cfg.pi, None)
+    # load model
+    root_state_dict = None
+    client_cfg = None
+    if cfg.fed.task == 'img_cls':
+        client_cfg = {
+        'device': cfg.device,
+        'list__ncls': list__ncls,
+        'inputsize': inputsize,
+        'lr': cfg.lr,
+        'lr_factor': cfg.lr_factor,
+        'lr_min': cfg.lr_min,
+        'epochs_max': cfg.epochs_max,
+        'patience_max': cfg.patience_max,
+        'backbone': cfg.backbone.name,
+        'nhid': cfg.nhid,
+        }
+
+    for task_id in range(num_tasks):
+        task_dataloader = dict__idx_task__dataloader[task_id]
+        for epoch in range(client_cfg['epochs_max']):
+            client_models, client_losses = task_train(task_dataloader, cfg, client_cfg, root_state_dict)
+            # TODO server aggregate (update root_state_dict)
+
     pass
 
 @hydra.main(config_path='conf', config_name='config')
