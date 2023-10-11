@@ -1,5 +1,5 @@
 import copy
-
+import clients.alg_client as alg_client
 import torch
 from omegaconf import DictConfig, OmegaConf
 
@@ -10,27 +10,14 @@ def switch_tag(num_clients, num_batches):
     tags[-1] += num_batches % num_clients
     return tags[1:-1]
 
-class client:
-    def __init__(self, root_model):
-        self.model = copy.deepcopy(root_model)
-        self.device = self.model.device
-        self.loss = 0
-        self.batch_num = 0
-    def batch_train(self,x,y):
-        pass
-
-    def client_info(self):
-        info = {'model': self.model, 'loss':self.loss/self.batch_num}
-        return info
-
-
-
 
 
 def task_train(task__dataloader: dict, task_cfg: DictConfig, root_model):
     num_clients = task_cfg.num_clients
     assert num_clients > 0 , "At least one client is required."
     tags = switch_tag(num_clients,len(task__dataloader))
+
+    client = getattr(alg_client,task_cfg.alg)
 
     current_client = client(root_model)
     client_models = []
