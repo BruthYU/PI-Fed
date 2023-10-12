@@ -15,6 +15,7 @@ class SPGClassifier(nn.Module):
         for ncls in list__ncls:
             head = _TaskHead(nn.Linear(dim, ncls), list__spg=list__spg)
             self.list__classifier.append(head)
+        # TODO Single Task Head
         # endfor
     # enddef
 

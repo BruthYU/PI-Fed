@@ -105,9 +105,8 @@ def train(cfg: DictConfig):
 
     for task_id in range(num_tasks):
         task_dataloader = dict__idx_task__dataloader[task_id]
-        for epoch in range(client_cfg['epochs_max']):
-            client_models, client_losses = task_train(task_dataloader, cfg, client_cfg, root_state_dict)
-            # TODO server aggregate (update root_state_dict)
+        client_models, client_losses = fed_task_train(task_id,task_dataloader, cfg, client_cfg, root_state_dict)
+        # TODO server aggregate (update root_state_dict)
 
     pass
 
