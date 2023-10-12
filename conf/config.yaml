@@ -24,7 +24,7 @@ optuna:
 
 nhid: 2048
 device: cuda
-epochs_max: 500
+epochs_max: 10
 patience_max: 5
 
 lr: 0.25
@@ -33,6 +33,6 @@ lr_factor: 3
 
 fed:
   alg: PI_Fed  # PI_Fed, FedAvg
-  num_clients: 5
+  num_clients: [2, 3, 4, 2, 3, 4, 2, 3, 4, 2]
   task: img_cls # text_cls, img_cls
 

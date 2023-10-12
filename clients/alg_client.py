@@ -18,22 +18,43 @@ class PI_Fed(AbstractClient):
                                                          min_lr=self.lr_min,
                                                          verbose=True,
                                                          )
+        self.list__target_train = []
+        self.list__output_train = []
 
-        self.metric = {
-            'patience': 0,
-            'loss_val_best': np.inf,
-            'acc_val_best': -np.inf,
-            'loss_train_best': np.inf,
-            'acc_train_best': -np.inf,
-            'state_dict_best': self.copy_model(),
-            'epoch_best': 0,
-        }
+
 
     # Use AbstractClient Methods
     def batch_train(self,x,y):
         self.batch_num += 1
         x = x.to(self.device)
         y = y.to(self.device)
+        output, misc = self.model(x)
+        loss = self.compute_loss(output=output, target=y, misc=misc)
+        self.loss += loss
+        self.batch_num += 1
+        self.list__target_train.append(y)
+        self.list__output_train.append(output)
+
+        # optim
+        self.optimizer.zero_grad()
+        loss.backward()
+        self.modify_grads()
+        self.optimizer.step()
+
+    def modify_grads(self):
+        self.model.modify_grad()
+
+
+    def client_epoch_reset(self):
+        self.list__target_train = []
+        self.list__output_train = []
+        self.loss = 0
+        self.batch_num = 0
+
+
+
+
+
 
 
 

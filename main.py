@@ -17,6 +17,7 @@ from optuna import Trial
 import logging
 from clients import *
 from models import *
+from fed_trainer import *
 def uuid(digits=4):
     if not hasattr(uuid, "uuid_value"):
         uuid.uuid_value = struct.unpack('I', os.urandom(4))[0] % int(10 ** digits)
@@ -77,7 +78,7 @@ def load_dataloader(cfg: DictConfig) -> Dict[int, Dict[str, Any]]:
     return dict__idx_task__dataloader
 
 
-def train(cfg: DictConfig):
+def continual_fed_train(cfg: DictConfig):
     print(f'device: {cfg.device}', bcolor=BColors.OKBLUE)
     # load dataset
     dict__idx_task__dataloader = load_dataloader(cfg)
@@ -101,11 +102,15 @@ def train(cfg: DictConfig):
         'patience_max': cfg.patience_max,
         'backbone': cfg.backbone.name,
         'nhid': cfg.nhid,
+        'task_id': 0,
+        'client_epochs': 5
         }
 
     for task_id in range(num_tasks):
         task_dataloader = dict__idx_task__dataloader[task_id]
-        client_models, client_losses = fed_task_train(task_id,task_dataloader, cfg, client_cfg, root_state_dict)
+        client_cfg['task_id'] = task_id
+        trainer = fed_task_train(task_dataloader, cfg, client_cfg, root_state_dict)
+        client_models, client_losses = trainer.train()
         # TODO server aggregate (update root_state_dict)
 
     pass
@@ -113,7 +118,7 @@ def train(cfg: DictConfig):
 @hydra.main(config_path='conf', config_name='config')
 def main(cfg: DictConfig):
     LOG.info(f'\n[CONIFG] : \n{OmegaConf.to_yaml(cfg)}')
-    train(cfg)
+    continual_fed_train(cfg)
 
 
 
