@@ -45,11 +45,19 @@ class PI_Fed(AbstractClient):
         self.model.modify_grad()
 
 
-    def client_epoch_reset(self):
+    def client_epoch_reset(self, avg_state_dict):
         self.list__target_train = []
         self.list__output_train = []
         self.loss = 0
         self.batch_num = 0
+        if avg_state_dict is not None:
+            self.model.load_state_dict(avg_state_dict)
+
+    def complete_learning(self, idx_task,):
+        def complete_learning(self, idx_task: int, **kwargs) -> None:
+            dl = kwargs['dl_train']
+
+            self.model.compute_importance(idx_task=idx_task, dl=dl)
 
 
 

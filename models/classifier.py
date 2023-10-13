@@ -10,25 +10,25 @@ from utils import assert_type
 class SPGClassifier(nn.Module):
     def __init__(self, list__ncls: List[int], dim: int, idx_task: int, list__spg: List[SPG]):
         super().__init__()
+        self.idx_task = idx_task
 
-        # self.list__classifier = nn.ModuleList()
-        # for ncls in list__ncls:
-        #     head = _TaskHead(nn.Linear(dim, ncls), list__spg=list__spg)
-        #     self.list__classifier.append(head)
 
-        # TODO Single Task Head
-        self.classifier = _TaskHead(nn.Linear(dim,list__ncls[idx_task]),list__spg=list__spg)
+        self.list__classifier = nn.ModuleList()
+        for ncls in list__ncls:
+            head = _TaskHead(nn.Linear(dim, ncls), list__spg=list__spg)
+            self.list__classifier.append(head)
+
+        # TODO Dynamic Task Head
+
         # endfor
     # enddef
 
     def forward(self, x: Tensor) -> Tensor:
         assert_type(x, Tensor)
-
-
-        # clf = self.list__classifier[idx_task]
+        clf = self.list__classifier[self.idx_task]
         x = x.view(x.shape[0], -1)
-        # out = clf(x)
-        out = self.classifier(x)
+        out = clf(x)
+        # out = self.classifier(x)
 
         return out
     # enddef
