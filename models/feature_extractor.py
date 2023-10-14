@@ -8,9 +8,8 @@ from utils import assert_type
 
 
 class ModelAlexnet(nn.Module):
-    def __init__(self, inputsize: Tuple[int, ...], nhid: int, drop1: float, drop2: float,idx_task: int):
+    def __init__(self, inputsize: Tuple[int, ...], nhid: int, drop1: float, drop2: float):
         super().__init__()
-        self.idx_task = idx_task
 
         nch, size = inputsize[0], inputsize[1]
 
@@ -41,7 +40,7 @@ class ModelAlexnet(nn.Module):
         return int(np.floor((Lin + 2 * padding - dilation * (kernel_size - 1) - 1) / float(stride) + 1))
     # enddef
 
-    def forward(self, x: Tensor) -> Tuple[Tensor, Dict]:
+    def forward(self, x: Tensor, args: Dict[str, Any]) -> Tuple[Tensor, Dict]:
         assert_type(x, Tensor)
 
         self.device = x.device
@@ -61,16 +60,16 @@ class ModelAlexnet(nn.Module):
         return h, misc
     # enddef
 
-    def modify_grads(self):
+    def modify_grads(self, args: Dict[str, Any]):
+        idx_task = args['idx_task']
 
-
-        if self.idx_task == 0:
+        if idx_task == 0:
             return
         # endif
 
         for name_module, module in self.named_modules():
             if isinstance(module, SPG):
-                module.softmask(self.idx_task)
+                module.softmask(idx_task)
             # endif
         # endfor
     # enddef

@@ -48,9 +48,13 @@ class fed_task_train():
         for client_id in range(self.num_clients):
             self.clients[client_id].model.train()
         for epoch in range(self.client_cfg['epoch_max']):
-            self.client_epoch_reset(self.avg_state_dict)
+            self.client_epoch_reset()
             self.train_epoch()
             self.sever_epoch()
+
+        self.clients_complete_learning()
+
+
         return self.avg_state_dict
 
 
@@ -70,12 +74,27 @@ class fed_task_train():
             info = self.clients[client_id].client_info()
             client_models.append(info['model'])
             client_losses.append(info['loss'])
-        avg_state_dict = self.server.average_weights(client_models)
-        return avg_state_dict
+        self.avg_state_dict = self.server.average_weights(client_models)
+
+
+
+    #TODO clients_complete_learning
+    def clients_complete_learning(self):
+        range_tasks = range(self.task_id + 1)
+        for t in range_tasks:
+            for i in range(self.num_clients):
+                self.clients[i].model.zero_grad()
+
+
+
+
+
+
 
 
     # TODO Scheduler
     # TODO state_dict analysis
+    # TODO mask avg
 
 
 

@@ -8,37 +8,37 @@ from utils import assert_type
 
 
 class SPGClassifier(nn.Module):
-    def __init__(self, list__ncls: List[int], dim: int, idx_task: int, list__spg: List[SPG]):
+    def __init__(self, list__ncls: List[int], dim: int, list__spg: List[SPG]):
         super().__init__()
-        self.idx_task = idx_task
-
 
         self.list__classifier = nn.ModuleList()
         for ncls in list__ncls:
             head = _TaskHead(nn.Linear(dim, ncls), list__spg=list__spg)
             self.list__classifier.append(head)
-
-        # TODO Dynamic Task Head
-
         # endfor
+
     # enddef
 
-    def forward(self, x: Tensor) -> Tensor:
+    def forward(self, x: Tensor, args: Dict[str, Any]) -> Tensor:
         assert_type(x, Tensor)
-        clf = self.list__classifier[self.idx_task]
+
+        idx_task = args['idx_task']
+
+        clf = self.list__classifier[idx_task]
         x = x.view(x.shape[0], -1)
         out = clf(x)
-        # out = self.classifier(x)
 
         return out
     # enddef
 
     def modify_grads(self, args: Dict[str, Any]) -> None:
+        idx_task = args['idx_task']
+
         torch.nn.utils.clip_grad_norm_(self.parameters(), 10000)
 
         for _, module in self.list__classifier.named_modules():
             if isinstance(module, _TaskHead):
-                module.softmask(idx_task=self.idx_task)
+                module.softmask(idx_task=idx_task)
             # endif
         # endfor
     # enddef

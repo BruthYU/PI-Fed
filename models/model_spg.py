@@ -10,8 +10,9 @@ from models.spg import SPG
 from utils import assert_type
 
 
+
 class ModelSPG(nn.Module):
-    def __init__(self, device: str, list__ncls: List[int], inputsize: Tuple[int, ...], backbone: str, nhid: int, task_id: int,**kwargs):
+    def __init__(self, device: str, list__ncls: List[int], inputsize: Tuple[int, ...], backbone: str, nhid: int, **kwargs):
         super().__init__()
 
         self.device = device
@@ -20,8 +21,8 @@ class ModelSPG(nn.Module):
             drop1 = kwargs['drop1']
             drop2 = kwargs['drop2']
 
-            self.feature_extractor = ModelAlexnet(inputsize, nhid=nhid, drop1=drop1, drop2=drop2,idx_task = task_id)
-            self.classifier = SPGClassifier(list__ncls, dim=nhid, idx_task = task_id,
+            self.feature_extractor = ModelAlexnet(inputsize, nhid=nhid, drop1=drop1, drop2=drop2)
+            self.classifier = SPGClassifier(list__ncls, dim=nhid,
                                             list__spg=[self.feature_extractor.c1, self.feature_extractor.c2, self.feature_extractor.c3,
                                                        self.feature_extractor.fc1, self.feature_extractor.fc2])
         else:
@@ -85,11 +86,11 @@ class ModelSPG(nn.Module):
         # endfor
     # enddef
 
-    def forward(self, x: Tensor) -> Tuple[Tensor, Dict[str, Any]]:
+    def forward(self, x: Tensor, args: Dict[str, Any]) -> Tuple[Tensor, Dict[str, Any]]:
         assert_type(x, Tensor)
 
-        out, misc = self.feature_extractor(x)
-        out = self.classifier(out)
+        out, misc = self.feature_extractor(x, args=args)
+        out = self.classifier(out, args=args)
 
         return out, misc
     # enddef

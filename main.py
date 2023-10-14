@@ -102,13 +102,13 @@ def continual_fed_train(cfg: DictConfig):
         'patience_max': cfg.patience_max,
         'backbone': cfg.backbone.name,
         'nhid': cfg.nhid,
-        'task_id': 0,
+        'idx_task': 0,
         'client_epochs': 5
         }
 
     for task_id in range(num_tasks):
         task_dataloader = dict__idx_task__dataloader[task_id]
-        client_cfg['task_id'] = task_id
+        client_cfg['idx_task'] = task_id
         trainer = fed_task_train(task_dataloader, cfg, client_cfg, root_state_dict)
         client_models, client_losses = trainer.train()
         # TODO server aggregate (update root_state_dict)
