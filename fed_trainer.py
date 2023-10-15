@@ -12,7 +12,7 @@ from utils import my_accuracy
 from copy import deepcopy
 
 class fed_task_train():
-    def __init__(self, task__dataloader: dict, cfg: DictConfig, client_cfg: Dict, root_state_dict):
+    def __init__(self, task__dataloader: dict, cfg: DictConfig, client_cfg: Dict, root_state_dict = None, root_mask = None):
         self.task_id = client_cfg['task_id']
         self.task__dataloader = task__dataloader
         self.cfg = cfg
@@ -25,12 +25,12 @@ class fed_task_train():
         self.tags = self.switch_tag(self.num_clients, len(self.task__dataloader))
 
         server = getattr(alg_server,cfg.fed.alg)
-        self.server = server(client_cfg)
-
+        self.server = server(client_cfg,root_state_dict,root_mask)
 
         # Initialization
         client = getattr(alg_client, cfg.fed.alg)
-        self.clients = [client(client_cfg, root_state_dict=self.root_state_dict)] * self.num_clients
+        if cfg.fed.alg == 'PI_Fed':
+            self.clients = [client(client_cfg, root_state_dict=self.server.avg_state_dict, root_mask = self.server.avg_mask)] * self.num_clients
 
 
 
@@ -44,7 +44,7 @@ class fed_task_train():
 
     def client_epoch_reset(self):
         for i in range(self.num_clients):
-            self.clients[i].client_epoch_reset(self.avg_state_dict)
+            self.clients[i].client_epoch_reset(self.server.avg_state_dict)
 
     def train(self):
         for client_id in range(self.num_clients):
@@ -58,7 +58,6 @@ class fed_task_train():
         self.server.average_mask(list_client_module_mask)
 
 
-        return self.avg_state_dict
 
 
     def train_epoch(self):
@@ -101,12 +100,10 @@ class fed_task_train():
 
 
 
-    # TODO Statedict Logic
+    #TODO Statedict Logic
 
 
-    # TODO Scheduler
-    # TODO state_dict analysis
-    # TODO mask avg
+    #TODO Scheduler
 
 
 

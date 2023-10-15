@@ -5,12 +5,14 @@ from typing import *
 from models import *
 from torch import Tensor, nn, optim
 class PI_Fed(AbstractClient):
-    def __init__(self, client_args: Dict[str, Any], root_state_dict):
+    def __init__(self, client_args: Dict[str, Any], root_state_dict = None, root_mask = None):
         super().__init__(**client_args)
         self.client_args = client_args
         self.model = ModelSPG(**client_args).to(self.device)
         if root_state_dict is not None:
             self.model.load_state_dict(root_state_dict)
+        if root_mask is not None:
+            self.model.load_mask(root_mask)
         self.optimizer = optim.SGD(self.model.parameters(), lr=self.lr)
         self.scheduler = optim.lr_scheduler.ReduceLROnPlateau(self.optimizer,
                                                          mode='min',
@@ -98,6 +100,7 @@ class PI_Fed(AbstractClient):
             if isinstance(module, SPG):
                 module.compute_mask(idx_task=self.client_args['idx_task'])
                 dict_module_mask[name] = module.history_mask
+                # [module_name][idx_task][param_name][mask_tensor]
         return dict_module_mask
 
 

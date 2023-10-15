@@ -99,3 +99,10 @@ class ModelSPG(nn.Module):
         self.feature_extractor.modify_grads(args=args)
         self.classifier.modify_grads(args=args)
     # enddef
+
+    def load_mask(self, root_mask: Dict):
+        for name_module, module in self.named_modules():
+            if isinstance(module, SPG) and name_module in root_mask:
+                module.history_mask = root_mask[name_module]
+
+

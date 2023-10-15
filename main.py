@@ -89,6 +89,7 @@ def continual_fed_train(cfg: DictConfig):
 
     # load model
     root_state_dict = None
+    root_mask = None
     client_cfg = None
     if cfg.fed.task == 'img_cls':
         client_cfg = {
@@ -109,11 +110,10 @@ def continual_fed_train(cfg: DictConfig):
     for task_id in range(num_tasks):
         task_dataloader = dict__idx_task__dataloader[task_id]
         client_cfg['idx_task'] = task_id
-        trainer = fed_task_train(task_dataloader, cfg, client_cfg, root_state_dict)
-        client_models, client_losses = trainer.train()
-        # TODO server aggregate (update root_state_dict)
+        trainer = fed_task_train(task_dataloader, cfg, client_cfg, root_state_dict, root_mask)
+        trainer.train()
+        root_state_dict, root_mask = trainer.server.avg_state_dict, trainer.server.avg_mask
 
-    pass
 
 @hydra.main(config_path='conf', config_name='config')
 def main(cfg: DictConfig):
