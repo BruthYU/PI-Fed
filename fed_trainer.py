@@ -18,19 +18,21 @@ class fed_task_train():
         self.cfg = cfg
         self.client_cfg = client_cfg
         self.root_state_dict = root_state_dict
-        self.avg_state_dict = None
+
 
         self.num_clients = cfg.fed.num_clients[self.task_id]
         assert self.num_clients > 0, "At least one client is required."
         self.tags = self.switch_tag(self.num_clients, len(self.task__dataloader))
+
+        server = getattr(alg_server,cfg.fed.alg)
+        self.server = server(client_cfg)
 
 
         # Initialization
         client = getattr(alg_client, cfg.fed.alg)
         self.clients = [client(client_cfg, root_state_dict=self.root_state_dict)] * self.num_clients
 
-        server = getattr(alg_server,cfg.fed.alg)
-        self.server = server(client_cfg)
+
 
 
     def switch_tag(self, num_clients, num_batches):
@@ -52,7 +54,8 @@ class fed_task_train():
             self.train_epoch()
             self.sever_epoch()
 
-        self.clients_complete_learning()
+        list_client_module_mask = self.clients_complete_learning()
+        self.server.average_mask(list_client_module_mask)
 
 
         return self.avg_state_dict
@@ -74,22 +77,31 @@ class fed_task_train():
             info = self.clients[client_id].client_info()
             client_models.append(info['model'])
             client_losses.append(info['loss'])
-        self.avg_state_dict = self.server.average_weights(client_models)
+        self.server.avg_state_dict = self.server.average_weights(client_models)
 
 
 
-    #TODO clients_complete_learning
     def clients_complete_learning(self):
+        for i in range(self.num_clients):
+            self.clients[i].pre_complete_learning()
         range_tasks = range(self.task_id + 1)
         for t in range_tasks:
-            for i in range(self.num_clients):
-                self.clients[i].model.zero_grad()
+            client_id = 0
+            for idx_batch, (x, y) in enumerate(self.task__dataloader):
+                self.clients[client_id].batch_complete(x, y, t)
+                if idx_batch in self.tags:
+                    client_id += 1
+        list_client_module_mask = []
+        for i in range(self.num_clients):
+            list_client_module_mask.append(self.clients[i].post_complete_learning())
+        return list_client_module_mask
 
 
 
 
 
 
+    # TODO Statedict Logic
 
 
     # TODO Scheduler

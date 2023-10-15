@@ -92,10 +92,13 @@ class PI_Fed(AbstractClient):
     def pre_complete_learning(self) -> None:
         self.model.zero_grad()
 
-    def post_complete_learning(self) -> None:
+    def post_complete_learning(self) -> Dict[str, Dict]:
+        dict_module_mask = {}
         for name, module in self.model.named_modules():
             if isinstance(module, SPG):
                 module.compute_mask(idx_task=self.client_args['idx_task'])
+                dict_module_mask[name] = module.history_mask
+        return dict_module_mask
 
 
 
