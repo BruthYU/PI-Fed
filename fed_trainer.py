@@ -1,6 +1,7 @@
 import copy
 import clients.alg_client as alg_client
 import server.alg_server as alg_server
+
 import torch
 from omegaconf import DictConfig, OmegaConf
 from typing import *
@@ -26,6 +27,7 @@ class fed_task_train():
 
         server = getattr(alg_server,cfg.fed.alg)
         self.server = server(client_cfg,root_state_dict,root_mask)
+
 
         # Initialization
         client = getattr(alg_client, cfg.fed.alg)
@@ -69,6 +71,7 @@ class fed_task_train():
                     client_id += 1
 
 
+
     def sever_epoch(self):
         client_models = []
         client_losses = []
@@ -97,13 +100,6 @@ class fed_task_train():
 
 
 
-
-
-
-    #TODO Statedict Logic
-
-
-    #TODO Scheduler
 
 
 

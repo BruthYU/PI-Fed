@@ -18,6 +18,7 @@ import logging
 from clients import *
 from models import *
 from fed_trainer import *
+from server import Eval_PI_Fed
 def uuid(digits=4):
     if not hasattr(uuid, "uuid_value"):
         uuid.uuid_value = struct.unpack('I', os.urandom(4))[0] % int(10 ** digits)
@@ -106,13 +107,23 @@ def continual_fed_train(cfg: DictConfig):
         'idx_task': 0,
         'client_epochs': 5
         }
+    eval_server = Eval_PI_Fed(client_args=client_cfg)
 
     for task_id in range(num_tasks):
-        task_dataloader = dict__idx_task__dataloader[task_id]
+        LOG.info(f'------------[Train On Task]--(idx_task:{task_id})----------------')
+        task_dataloader = dict__idx_task__dataloader[task_id]['train']
         client_cfg['idx_task'] = task_id
         trainer = fed_task_train(task_dataloader, cfg, client_cfg, root_state_dict, root_mask)
         trainer.train()
         root_state_dict, root_mask = trainer.server.avg_state_dict, trainer.server.avg_mask
+        eval_server.set_status(root_state_dict, task_id)
+        for t_prev in range(task_id + 1):
+            results_test = eval_server.test(t_prev,dict__idx_task__dataloader[task_id]['test'])
+            loss_test = results_test['loss_test']
+            acc_test = results_test['acc_test']
+            LOG.info(f'Test task {t_prev} | loss_test: {loss_test} | acc_test: {acc_test}')
+
+
 
 
 @hydra.main(config_path='conf', config_name='config')

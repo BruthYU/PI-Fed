@@ -89,10 +89,15 @@ class PI_Fed(AbstractClient):
         self.batch_num = 0
         if avg_state_dict is not None:
             self.model.load_state_dict(avg_state_dict)
+        if self.loss != 0 :
+            self.scheduler.step()
 
 
     def pre_complete_learning(self) -> None:
         self.model.zero_grad()
+
+
+
 
     def post_complete_learning(self) -> Dict[str, Dict]:
         dict_module_mask = {}
