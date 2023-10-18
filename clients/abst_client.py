@@ -4,7 +4,7 @@ from copy import deepcopy
 class AbstractClient:
     def __init__(self, device: str, list__ncls: List[int], inputsize: Tuple[int, ...],
                  lr: float, lr_factor: float, lr_min: float, epochs_max: int, patience_max: int,
-                 lamb: float, **kwargs):
+                 lamb: float, eps: float,**kwargs):
         self.device = device
 
         # dataloader
@@ -18,14 +18,18 @@ class AbstractClient:
         self.epochs_max = epochs_max
         self.patience_max = patience_max
         self.lamb = lamb
+        self.eps = eps
 
         # misc
         self.criterion = nn.CrossEntropyLoss()
         self.model = NotImplemented  # type: nn.Module
 
+
         #info
         self.loss = 0
         self.batch_num = 0
+
+
 
     def batch_train(self,x,y):
         raise NotImplementedError("Batch_train() is not implemented.")

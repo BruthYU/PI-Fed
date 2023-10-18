@@ -105,12 +105,21 @@ def continual_fed_train(cfg: DictConfig):
         'backbone': cfg.backbone.name,
         'nhid': cfg.nhid,
         'idx_task': 0,
-        'client_epochs': 5
+        'epochs_client': cfg.epochs_client,
+        'lamb': 0,
+        'eps': cfg.eps
         }
+    task_name = cfg.seq.name
+    drop_cfg = cfg.appr.tuned[task_name]
+    if client_cfg['backbone'] in ['alexnet']:
+        client_cfg['drop1'] = drop_cfg.drop1
+        client_cfg['drop2'] = drop_cfg.drop2
+
+
     eval_server = Eval_PI_Fed(client_args=client_cfg)
 
     for task_id in range(num_tasks):
-        LOG.info(f'------------[Train On Task]--(idx_task:{task_id})----------------')
+        LOG.info(f'------------[Train On Task {task_id}]----------------')
         task_dataloader = dict__idx_task__dataloader[task_id]['train']
         client_cfg['idx_task'] = task_id
         trainer = fed_task_train(task_dataloader, cfg, client_cfg, root_state_dict, root_mask)
@@ -124,7 +133,7 @@ def continual_fed_train(cfg: DictConfig):
             LOG.info(f'Test task {t_prev} | loss_test: {loss_test} | acc_test: {acc_test}')
 
 
-
+# TODO scheduler
 
 @hydra.main(config_path='conf', config_name='config')
 def main(cfg: DictConfig):

@@ -4,6 +4,7 @@ from clients.abst_client import AbstractClient
 from typing import *
 from models import *
 from torch import Tensor, nn, optim
+from torch.nn.utils import clip_grad_norm_
 class PI_Fed(AbstractClient):
     def __init__(self, client_args: Dict[str, Any], root_state_dict = None, root_mask = None):
         super().__init__(**client_args)
@@ -14,15 +15,19 @@ class PI_Fed(AbstractClient):
         if root_mask is not None:
             self.model.load_mask(root_mask)
         self.optimizer = optim.SGD(self.model.parameters(), lr=self.lr)
-        self.scheduler = optim.lr_scheduler.ReduceLROnPlateau(self.optimizer,
-                                                         mode='min',
-                                                         factor=1.0 / self.lr_factor,
-                                                         patience=max(self.patience_max - 1, 0),
-                                                         min_lr=self.lr_min,
-                                                         verbose=True,
-                                                         )
+        self.scheduler = optim.lr_scheduler.StepLR(self.optimizer,step_size=10, gamma=0.5,)
+        # self.scheduler = optim.lr_scheduler.ReduceLROnPlateau(self.optimizer,
+        #                                                  mode='min',
+        #                                                  factor=1.0 / self.lr_factor,
+        #                                                  patience=max(self.patience_max - 1, 0),
+        #                                                  min_lr=self.lr_min,
+        #                                                  verbose=True,
+        #                                                  )
+
         self.list__target_train = []
         self.list__output_train = []
+
+
 
 
 
@@ -34,14 +39,17 @@ class PI_Fed(AbstractClient):
         args = {'idx_task': self.client_args['idx_task']}
         output, misc = self.model(x, args=args)
         loss = self.compute_loss(output=output, target=y, misc=misc)
+        #print(f'batch_num: {self.batch_num}, loss: {loss}')
+
         self.loss += loss
-        self.batch_num += 1
         self.list__target_train.append(y)
         self.list__output_train.append(output)
 
         # optim
         self.optimizer.zero_grad()
         loss.backward()
+        clip_grad_norm_(self.model.parameters(),max_norm=2.,norm_type=2)
+
         self.modify_grads(args)
         self.optimizer.step()
 
@@ -79,7 +87,7 @@ class PI_Fed(AbstractClient):
 
 
     def modify_grads(self, args):
-        self.model.modify_grad(args= args)
+        self.model.modify_grads(args= args)
 
 
     def client_epoch_reset(self, avg_state_dict):
@@ -89,8 +97,7 @@ class PI_Fed(AbstractClient):
         self.batch_num = 0
         if avg_state_dict is not None:
             self.model.load_state_dict(avg_state_dict)
-        if self.loss != 0 :
-            self.scheduler.step()
+
 
 
     def pre_complete_learning(self) -> None:

@@ -8,6 +8,7 @@ class AbstractServer:
         self.idx_task = idx_task
 
 
+
         # dataloader
         # self.list__ncls = list__ncls
         # self.inputsize = inputsize
@@ -29,6 +30,8 @@ class AbstractServer:
             weights_avg[key] = torch.div(weights_avg[key], len(client_models))
 
         return weights_avg
+    def average_loss(self, list_losses):
+        return sum(list_losses)/len(list_losses)
 
 
 # def __init__(self, device: str, list__ncls: List[int], inputsize: Tuple[int, ...],

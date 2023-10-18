@@ -1,2 +1,2 @@
-from alg_server import *
-from eval_server import *
+from server.alg_server import *
+from server.eval_server import *
