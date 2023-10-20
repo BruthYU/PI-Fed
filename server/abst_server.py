@@ -3,9 +3,10 @@ from torch import Tensor, nn, optim
 from copy import deepcopy
 import torch
 class AbstractServer:
-    def __init__(self, device: str, idx_task: int, **kwargs):
+    def __init__(self, device: str, idx_task: int, lamb: float,**kwargs):
         self.device = device
         self.idx_task = idx_task
+        self.lamb = lamb
 
 
 

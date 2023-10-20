@@ -14,13 +14,14 @@ class Eval_PI_Fed(AbstractServer):
         self.root_state_dict = None
 
     def set_status(self, root_state_dict, idx_task_learned):
+        self.root_state_dict = root_state_dict
         self.idx_task = idx_task_learned
         self.model.load_state_dict(root_state_dict)
 
 
     def test(self, t_prev, dl_test):
         assert self.root_state_dict is not None, "root_state_dict is not loaded !"
-        results_test = self._eval_commom(dl_test)
+        results_test = self._eval_commom(t_prev, dl_test)
 
         results = {
             'idx_task_learned':self.idx_task,
@@ -30,13 +31,13 @@ class Eval_PI_Fed(AbstractServer):
             }
 
         return results
-    def _eval_commom(self, dl_test: DataLoader) -> Dict[str, float]:
+    def _eval_commom(self, idx_task, dl_test: DataLoader) -> Dict[str, float]:
         self.model.eval()
         list__target, list__output = [], []
         loss = 0  # type: Tensor
 
         args = {
-            'idx_task': self.idx_task,
+            'idx_task': idx_task,
         }
 
         with torch.no_grad():

@@ -85,7 +85,8 @@ class SPG(nn.Module):
                     history[name] = torch.zeros_like(h)
                 # endif
 
-                history[name] = torch.max(history[name], self.standardize_pm1(h).abs())
+                # history[name] = torch.max(history[name], self.standardize_pm1(h).abs())
+                history[name] = h
             # endfor
         # endfor
 

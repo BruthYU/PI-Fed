@@ -34,7 +34,7 @@ class fed_task_train():
         client = getattr(alg_client, cfg.fed.alg)
         if cfg.fed.alg == 'PI_Fed':
             self.clients = [client(client_cfg, root_state_dict=self.server.avg_state_dict,
-                                   root_mask = self.server.avg_mask) for i in range(self.num_clients)]
+                                   root_mask = self.server.mask) for i in range(self.num_clients)]
         pass
 
 
@@ -62,7 +62,7 @@ class fed_task_train():
             LOG.info(f'Epoch {epoch}, Average Loss: {self.server.avg_loss}')
 
         list_client_module_mask = self.clients_complete_learning()
-        self.server.average_mask(list_client_module_mask)
+        self.server.aggregate_mask(list_client_module_mask)
 
 
 
@@ -72,7 +72,6 @@ class fed_task_train():
             client_id = 0
             for idx_batch, (x, y) in enumerate(self.task__dataloader):
                 if idx_batch in self.tags:
-                    #self.clients[client_id].scheduler.step()
                     client_id += 1
                 self.clients[client_id].batch_train(x, y)
         pass
@@ -87,22 +86,26 @@ class fed_task_train():
             info = self.clients[client_id].client_info()
             client_models.append(info['model'])
             client_losses.append(info['loss'])
-        self.server.avg_state_dict = self.server.average_weights(client_models)
+        new_state_dict = self.server.average_weights(client_models)
+        self.server.modify_state_dict(new_state_dict)
         self.server.avg_loss = self.server.average_loss(client_losses)
 
 
 
 
     def clients_complete_learning(self):
-        for i in range(self.num_clients):
-            self.clients[i].pre_complete_learning()
+
         range_tasks = range(self.task_id + 1)
         for t in range_tasks:
+            for client in self.clients:
+               client.pre_complete_learning()
             client_id = 0
             for idx_batch, (x, y) in enumerate(self.task__dataloader):
                 self.clients[client_id].batch_complete(x, y, t)
                 if idx_batch in self.tags:
                     client_id += 1
+            for client in self.clients:
+                client.model_register_grad(t)
         list_client_module_mask = []
         for i in range(self.num_clients):
             list_client_module_mask.append(self.clients[i].post_complete_learning())

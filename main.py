@@ -124,10 +124,10 @@ def continual_fed_train(cfg: DictConfig):
         client_cfg['idx_task'] = task_id
         trainer = fed_task_train(task_dataloader, cfg, client_cfg, root_state_dict, root_mask)
         trainer.train()
-        root_state_dict, root_mask = trainer.server.avg_state_dict, trainer.server.avg_mask
+        root_state_dict, root_mask = trainer.server.avg_state_dict, trainer.server.mask
         eval_server.set_status(root_state_dict, task_id)
         for t_prev in range(task_id + 1):
-            results_test = eval_server.test(t_prev,dict__idx_task__dataloader[task_id]['test'])
+            results_test = eval_server.test(t_prev,dict__idx_task__dataloader[t_prev]['test'])
             loss_test = results_test['loss_test']
             acc_test = results_test['acc_test']
             LOG.info(f'Test task {t_prev} | loss_test: {loss_test} | acc_test: {acc_test}')

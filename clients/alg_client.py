@@ -15,14 +15,7 @@ class PI_Fed(AbstractClient):
         if root_mask is not None:
             self.model.load_mask(root_mask)
         self.optimizer = optim.SGD(self.model.parameters(), lr=self.lr)
-        self.scheduler = optim.lr_scheduler.StepLR(self.optimizer,step_size=10, gamma=0.5,)
-        # self.scheduler = optim.lr_scheduler.ReduceLROnPlateau(self.optimizer,
-        #                                                  mode='min',
-        #                                                  factor=1.0 / self.lr_factor,
-        #                                                  patience=max(self.patience_max - 1, 0),
-        #                                                  min_lr=self.lr_min,
-        #                                                  verbose=True,
-        #                                                  )
+
 
         self.list__target_train = []
         self.list__output_train = []
@@ -49,7 +42,6 @@ class PI_Fed(AbstractClient):
         self.optimizer.zero_grad()
         loss.backward()
         clip_grad_norm_(self.model.parameters(),max_norm=2.,norm_type=2)
-
         self.modify_grads(args)
         self.optimizer.step()
 
@@ -65,6 +57,10 @@ class PI_Fed(AbstractClient):
             lossfunc = OtherTasksLoss()
         loss = lossfunc(out, y)
         loss.backward()
+        #clip_grad_norm_(self.model.parameters(), max_norm=2., norm_type=2)
+
+    def model_register_grad(self, t):
+        idx_task = self.client_args['idx_task']
         for name_module, module in self.model.named_modules():
             if isinstance(module,SPG):
                 grads = {}
