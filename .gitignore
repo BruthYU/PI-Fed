@@ -3,3 +3,5 @@ data
 .git
 __pycache__
 outputs
+res
+

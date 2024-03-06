@@ -59,7 +59,10 @@ class PI_Fed(AbstractServer):
 
 
 
-
+    '''
+    list_client_module_mask = self.clients_complete_learning()
+    fed_train.py -> self.train()
+    '''
     def aggregate_mask(self, list_client_module_mask):
         mask = deepcopy(list_client_module_mask[0])
         for module_name, history_mask in mask.items():

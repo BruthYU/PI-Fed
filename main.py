@@ -28,7 +28,9 @@ LOG = logging.getLogger(__name__)
 
 
 
-
+'''
+seq={dataset_name}_{subtask_num}_bs={batchsize}_seed={seed}.pkl
+'''
 
 def load_dataloader(cfg: DictConfig) -> Dict[int, Dict[str, Any]]:
     basename_data = f'seq={cfg.seq.name}_bs={cfg.seq.batch_size}_seed={cfg.seed}'
@@ -118,6 +120,9 @@ def continual_fed_train(cfg: DictConfig):
 
     eval_server = Eval_PI_Fed(client_args=client_cfg)
 
+    '''
+    For every subtask, the trainer will assign num_client[task_id] clients
+    '''
     for task_id in range(num_tasks):
         LOG.info(f'------------[Train On Task {task_id}]----------------')
         task_dataloader = dict__idx_task__dataloader[task_id]['train']

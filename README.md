@@ -102,3 +102,25 @@ data/femnist/
       |- ...
       +- all_data_34_iid_01_0_keep_0_train_9.json
 </pre>
+
+## Experiments
+
+Experiments can be reproduced by running
+
+```shell
+python3 main.py appr=spg seq=<seq> 
+```
+
+with specifying `<seq>` for a dataset you want to run.
+
+For `<seq>`, you can choose one from the following datasets.
+
+- `cifar100_10` for **C-10** (CIFAR100 with 10 tasks)
+- `cifar100_20` for **C-20**
+- `tinyimagenet_10` for **T-10** (TinyImageNet with 10 tasks)
+- `tinyimagenet_20` for **T-20**
+- `imagenet_100` for **I-100** (ImageNet with 100 tasks)
+- `fceleba_10` for **FC-10** (Federated CelebA with 10 tasks)
+- `fceleba_20` for **FC-20**
+- `femnist_10` for **FE-10** (Federated EMNIST with 10 tasks)
+- `femnist_20` for **FE-20**

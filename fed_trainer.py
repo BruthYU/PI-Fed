@@ -39,7 +39,9 @@ class fed_task_train():
 
 
 
-
+    '''
+    switch client based on num_batches during the training of a subtask (per epoch)
+    '''
     def switch_tag(self, num_clients, num_batches):
         tags = []
         batch_per_client = num_batches // num_clients
@@ -52,12 +54,15 @@ class fed_task_train():
         for i in range(self.num_clients):
             self.clients[i].client_epoch_reset(self.server.avg_state_dict)
 
+    # Global epochs = aggregation times
     def train(self):
         for client_id in range(self.num_clients):
             self.clients[client_id].model.train()
         for epoch in range(self.client_cfg['epochs_max']):
             self.client_epoch_reset()
             self.train_epoch()
+
+            # Synchronize the global weight
             self.sever_epoch()
             LOG.info(f'Epoch {epoch}, Average Loss: {self.server.avg_loss}')
 
@@ -66,15 +71,17 @@ class fed_task_train():
 
 
 
-
+    # Local epochs for clients
     def train_epoch(self):
-        for epoch in range(self.client_cfg['epochs_client']):
+        for c_epoch in range(self.client_cfg['epochs_client']):
             client_id = 0
             for idx_batch, (x, y) in enumerate(self.task__dataloader):
                 if idx_batch in self.tags:
                     client_id += 1
                 self.clients[client_id].batch_train(x, y)
-        pass
+
+
+
 
 
 
@@ -86,21 +93,33 @@ class fed_task_train():
             info = self.clients[client_id].client_info()
             client_models.append(info['model'])
             client_losses.append(info['loss'])
+
+        # Get a copy of the averaged state dict before calibration
         new_state_dict = self.server.average_weights(client_models)
+
+        # Calibrate the gradient based on previously computed mask
         self.server.modify_state_dict(new_state_dict)
         self.server.avg_loss = self.server.average_loss(client_losses)
 
 
 
-
+    '''
+    Operations after the training of each subtask 
+    '''
     def clients_complete_learning(self):
 
         range_tasks = range(self.task_id + 1)
         for t in range_tasks:
             for client in self.clients:
+               # zero_grad()
                client.pre_complete_learning()
             client_id = 0
+
+            # one more backward pass (only for importance computation, not for weight update)
             for idx_batch, (x, y) in enumerate(self.task__dataloader):
+                '''
+                Key function of importance computation
+                '''
                 self.clients[client_id].batch_complete(x, y, t)
                 if idx_batch in self.tags:
                     client_id += 1

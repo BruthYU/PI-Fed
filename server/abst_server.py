@@ -9,19 +9,9 @@ class AbstractServer:
         self.lamb = lamb
 
 
-
-        # dataloader
-        # self.list__ncls = list__ncls
-        # self.inputsize = inputsize
-        #
-        # # variables
-        # self.lr = lr
-        # self.lr_factor = lr_factor
-        # self.lr_min = lr_min
-        # self.epochs_max = epochs_max
-        # self.patience_max = patience_max
-        # self.lamb = lamb
-
+    '''
+    Get a copy of the averaged state dict before calibration
+    '''
     def average_weights(self, client_models):
         weights_avg = deepcopy(client_models[0])
 

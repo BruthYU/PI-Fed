@@ -17,6 +17,7 @@ class PI_Fed(AbstractClient):
         self.optimizer = optim.SGD(self.model.parameters(), lr=self.lr)
 
 
+
         self.list__target_train = []
         self.list__output_train = []
 
@@ -42,9 +43,12 @@ class PI_Fed(AbstractClient):
         self.optimizer.zero_grad()
         loss.backward()
         clip_grad_norm_(self.model.parameters(),max_norm=2.,norm_type=2)
-        #self.modify_grads(args)
+
         self.optimizer.step()
 
+
+    '''
+    '''
     def batch_complete(self, x, y, t):
         idx_task = self.client_args['idx_task']
         args = {'idx_task': t}
