@@ -398,6 +398,8 @@ class FCelebA(Dataset):
         # endwith
 
         uid = 0
+
+        #TODO fix bugs
         for idx_user, username in enumerate(jdict['users']):
             if uid >= self.num_tasks:
                 break
