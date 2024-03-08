@@ -84,6 +84,9 @@ data/fceleba/
       +- ...
 </pre>
 
+<pre>
+./preprocess.sh -s iid --sf 1.0 -k 5 -t sample --iu 0.01
+</pre>
 ### Federated EMNIST-based (**FE-10** and **FE-20**)
 
 1. Follow [the instruction](https://github.com/TalwalkarLab/leaf/tree/master/data/femnist) to create data.

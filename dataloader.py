@@ -387,7 +387,7 @@ class FCelebA(Dataset):
         # read raw data
         if raw_need:
             self._read_raw()
-            self.load()
+            # self.load()
         # endif
     # enddef
 

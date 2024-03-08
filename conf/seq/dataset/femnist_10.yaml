@@ -8,5 +8,5 @@ femnist_10:
   num_train_per_class: 50
   num_val_per_class: 5
   num_test_per_class: 10
-  federated: True
+  federated: False
 
