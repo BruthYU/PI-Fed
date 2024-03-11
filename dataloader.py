@@ -129,7 +129,7 @@ def _get_dataloaders(cfg: DictConfig) -> Dict[int, Dict[str, Any]]:
         # endif
 
         if dataset_name in ['cifar100_10', 'cifar100_20', 'tinyimagenet_10', 'tinyimagenet_20', 'imagenet_100',
-                            'fceleba_10', 'fceleba_20', 'femnist_10', 'femnsit_20']:
+                            'fceleba_10', 'fceleba_20', 'femnist_10', 'femnist_20']:
             num_train_per_class = ds.num_train_per_class
             num_val_per_class = ds.num_val_per_class
             num_test_per_class = ds.num_test_per_class
@@ -170,7 +170,7 @@ def _get_dataloaders(cfg: DictConfig) -> Dict[int, Dict[str, Any]]:
                                                       'test': {'x': [], 'y': []}}
                                            for idx_task in range(num_tasks)}
                 for tvt, dataset in [('trainval', dataset_trainval), ('test', dataset_test)]:
-                    for image, y in dataset:
+                    for _, image, y in dataset:
                         idx_task = [t for t in range(num_tasks) if y in dict__idx_task__classes[t]]
                         assert len(idx_task) == 1
                         idx_task = idx_task[0]

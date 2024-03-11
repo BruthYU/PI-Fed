@@ -105,7 +105,9 @@ data/femnist/
       |- ...
       +- all_data_34_iid_01_0_keep_0_train_9.json
 </pre>
-
+<pre>
+./preprocess.sh -s iid --sf 1.0 -k 0 -t sample
+</pre>
 ## Experiments
 
 Experiments can be reproduced by running

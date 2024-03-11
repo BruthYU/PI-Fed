@@ -24,7 +24,7 @@ class fed_task_train():
 
         self.num_clients = cfg.fed.num_clients[self.task_id]
         assert self.num_clients > 0, "At least one client is required."
-        self.tags = self.switch_tag(self.num_clients, len(self.task__dataloader))
+        self.tags = self.switch_tag(self.num_clients, len(task__dataloader))
 
         server = getattr(alg_server,cfg.fed.alg)
         self.server = server(client_cfg,root_state_dict,root_mask)
@@ -43,6 +43,7 @@ class fed_task_train():
     switch client based on num_batches during the training of a subtask (per epoch)
     '''
     def switch_tag(self, num_clients, num_batches):
+        assert num_clients < num_batches, "Exception: num clients > num_batches !"
         tags = []
         batch_per_client = num_batches // num_clients
         for client_id in range(num_clients):
@@ -66,8 +67,13 @@ class fed_task_train():
             self.sever_epoch()
             LOG.info(f'Epoch {epoch}, Average Loss: {self.server.avg_loss}')
 
-        list_client_module_mask = self.clients_complete_learning()
-        self.server.aggregate_mask(list_client_module_mask)
+        if self.cfg.appr.name == 'spg':
+            list_client_module_mask = self.clients_complete_learning()
+            self.server.aggregate_mask(list_client_module_mask)
+        elif self.cfg.appr.name == 'avg':
+            assert self.server.mask == None, "No mask is needed but server.mask is not None"
+        else:
+            raise  NotImplementedError(f"The FL method is not implemented.")
 
 
 
@@ -125,6 +131,7 @@ class fed_task_train():
                     client_id += 1
             for client in self.clients:
                 client.model_register_grad(t)
+
         list_client_module_mask = []
         for i in range(self.num_clients):
             list_client_module_mask.append(self.clients[i].post_complete_learning())
