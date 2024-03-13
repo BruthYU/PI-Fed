@@ -1,3 +1,5 @@
+import copy
+
 import numpy as np
 from copy import deepcopy
 from server.abst_server import AbstractServer
@@ -105,9 +107,27 @@ class FedNova(AbstractServer):
         self.avg_state_dict = root_state_dict
         self.avg_loss = 0
 
+    def nova_average(self, client_models, client_coeffs):
+        norm_grads = []
+        for model, coeff in zip(client_models, client_coeffs):
+            norm_grad = copy.deepcopy(self.avg_state_dict)
+            for key in model:
+                norm_grad[key] = torch.div(self.avg_state_dict[key]-model[key], coeff)
+            norm_grads.append(norm_grad)
 
-    def nova_average(self):
-        pass
+        nova_grad = copy.deepcopy(self.avg_state_dict)
+        for i, norm_grad in enumerate(norm_grads):
+            for key in norm_grad:
+                if i == 0:
+                    nova_grad[key] = norm_grad[key]/len(client_models)
+                else:
+                    nova_grad[key] = nova_grad[key] + norm_grad[key]/len(client_models)
+
+        avg_coeff = sum(client_coeffs)/len(client_models)
+        for key in self.avg_state_dict:
+            self.avg_state_dict[key] -= avg_coeff * nova_grad
+
+
 
     def compute_global_weight(self, info: list):
         client_models = []
@@ -118,6 +138,8 @@ class FedNova(AbstractServer):
             client_losses.append(info_item['loss'])
             client_coeffs.append(info_item['coeff'])
         self.avg_loss = self.average_loss(client_losses)
+        self.nova_average(client_losses,client_coeffs)
+
 
 
 

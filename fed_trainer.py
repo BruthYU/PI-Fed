@@ -93,7 +93,7 @@ class fed_task_train():
         for client_id in range(self.num_clients):
             info.append(self.clients[client_id].client_info())
         self.server.compute_global_weight(info)
-        # self.server.avg_loss = self.server.average_loss(client_losses)
+
 
 
 
