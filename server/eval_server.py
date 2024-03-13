@@ -6,7 +6,7 @@ from models import *
 from torch import Tensor, nn, optim
 import utils
 
-class Eval_PI_Fed(AbstractServer):
+class Eval(AbstractServer):
     def __init__(self,client_args: Dict[str, Any]):
         super().__init__(**client_args)
         self.criterion = nn.CrossEntropyLoss()

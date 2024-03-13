@@ -18,7 +18,7 @@ import logging
 from clients import *
 from models import *
 from fed_trainer import *
-from server import Eval_PI_Fed
+from server import Eval
 def uuid(digits=4):
     if not hasattr(uuid, "uuid_value"):
         uuid.uuid_value = struct.unpack('I', os.urandom(4))[0] % int(10 ** digits)
@@ -118,7 +118,7 @@ def continual_fed_train(cfg: DictConfig):
         client_cfg['drop2'] = drop_cfg.drop2
 
 
-    eval_server = Eval_PI_Fed(client_args=client_cfg)
+    eval_server = Eval(client_args=client_cfg)
 
     '''
     For every subtask, the trainer will assign num_client[task_id] clients
@@ -129,7 +129,7 @@ def continual_fed_train(cfg: DictConfig):
         client_cfg['idx_task'] = task_id
         trainer = fed_task_train(task_dataloader, cfg, client_cfg, root_state_dict, root_mask)
         trainer.train()
-        root_state_dict, root_mask = trainer.server.avg_state_dict, trainer.server.mask
+        root_state_dict = trainer.server.avg_state_dict
         eval_server.set_status(root_state_dict, task_id)
         avg_acc = []
         for t_prev in range(task_id + 1):

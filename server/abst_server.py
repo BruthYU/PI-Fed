@@ -2,6 +2,7 @@ from typing import *
 from torch import Tensor, nn, optim
 from copy import deepcopy
 import torch
+from abc import ABC, abstractmethod
 class AbstractServer:
     def __init__(self, device: str, idx_task: int, lamb: float,**kwargs):
         self.device = device
@@ -23,6 +24,9 @@ class AbstractServer:
         return weights_avg
     def average_loss(self, list_losses):
         return sum(list_losses)/len(list_losses)
+    @abstractmethod
+    def compute_global_weight(self, client_models: list):
+        pass
 
 
 # def __init__(self, device: str, list__ncls: List[int], inputsize: Tuple[int, ...],

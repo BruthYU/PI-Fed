@@ -75,6 +75,18 @@ class PI_Fed(AbstractServer):
                 mask[module_name][self.idx_task][name] = v
         self.mask = mask
 
+    def compute_global_weight(self, client_models: list):
+        new_state_dict = self.average_weights(client_models)
+        self.modify_state_dict(new_state_dict)
+
+class FedAvg(AbstractServer):
+    def __init__(self, client_args: Dict[str, Any], root_state_dict = None):
+        super().__init__(**client_args)
+        self.avg_state_dict = root_state_dict
+        self.avg_loss = 0
+    def compute_global_weight(self, client_models: list):
+        self.avg_state_dict = self.average_weights(client_models)
+
 
 
 

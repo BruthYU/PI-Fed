@@ -26,8 +26,12 @@ class fed_task_train():
         assert self.num_clients > 0, "At least one client is required."
         self.tags = self.switch_tag(self.num_clients, len(task__dataloader))
 
-        server = getattr(alg_server,cfg.fed.alg)
-        self.server = server(client_cfg,root_state_dict,root_mask)
+
+        server = getattr(alg_server, cfg.fed.alg)
+        if cfg.fed.alg == 'PI_Fed':
+            self.server = server(client_cfg, root_state_dict, root_mask)
+        else:
+            self.server = server(client_cfg, root_state_dict)
 
 
         # Initialization
@@ -35,7 +39,9 @@ class fed_task_train():
         if cfg.fed.alg == 'PI_Fed':
             self.clients = [client(client_cfg, root_state_dict=self.server.avg_state_dict,
                                    root_mask = self.server.mask) for i in range(self.num_clients)]
-        pass
+        else:
+            self.clients = [client(client_cfg, root_state_dict=self.server.avg_state_dict) for i in range(self.num_clients)]
+
 
 
 
@@ -62,18 +68,13 @@ class fed_task_train():
         for epoch in range(self.client_cfg['epochs_max']):
             self.client_epoch_reset()
             self.train_epoch()
-
             # Synchronize the global weight
             self.sever_epoch()
             LOG.info(f'Epoch {epoch}, Average Loss: {self.server.avg_loss}')
 
-        if self.cfg.appr.name == 'spg':
+        if self.cfg.fed.alg == 'PI_Fed':
             list_client_module_mask = self.clients_complete_learning()
             self.server.aggregate_mask(list_client_module_mask)
-        elif self.cfg.appr.name == 'avg':
-            assert self.server.mask == None, "No mask is needed but server.mask is not None"
-        else:
-            raise  NotImplementedError(f"The FL method is not implemented.")
 
 
 
@@ -87,11 +88,6 @@ class fed_task_train():
                 self.clients[client_id].batch_train(x, y)
 
 
-
-
-
-
-
     def sever_epoch(self):
         client_models = []
         client_losses = []
@@ -99,12 +95,7 @@ class fed_task_train():
             info = self.clients[client_id].client_info()
             client_models.append(info['model'])
             client_losses.append(info['loss'])
-
-        # Get a copy of the averaged state dict before calibration
-        new_state_dict = self.server.average_weights(client_models)
-
-        # Calibrate the gradient based on previously computed mask
-        self.server.modify_state_dict(new_state_dict)
+        self.server.compute_global_weight(client_models)
         self.server.avg_loss = self.server.average_loss(client_losses)
 
 

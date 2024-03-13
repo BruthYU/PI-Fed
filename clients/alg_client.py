@@ -118,18 +118,43 @@ class PI_Fed(AbstractClient):
 
 
 
-
-
-
-
-
-
-
 class FedAvg(AbstractClient):
     def __init__(self, client_args: Dict[str, Any], root_state_dict):
         super().__init__(**client_args)
+        # Importance Computation will not be used
+        self.model = ModelSPG(**client_args).to(self.device)
+        self.optimizer = optim.SGD(self.model.parameters(), lr=self.lr)
         if root_state_dict is not None:
             self.model.load_state_dict(root_state_dict)
+        self.list__target_train = []
+        self.list__output_train = []
+        self.client_args = client_args
 
     def batch_train(self, x, y):
-        pass
+        self.batch_num += 1
+        x = x.to(self.device)
+        y = y.to(self.device)
+        args = {'idx_task': self.client_args['idx_task']}
+        output, misc = self.model(x, args=args)
+        loss = self.compute_loss(output=output, target=y, misc=misc)
+        # print(f'batch_num: {self.batch_num}, loss: {loss}')
+
+        self.loss += loss
+        self.list__target_train.append(y)
+        self.list__output_train.append(output)
+
+        # optim
+        self.optimizer.zero_grad()
+        loss.backward()
+        clip_grad_norm_(self.model.parameters(), max_norm=2., norm_type=2)
+
+        self.optimizer.step()
+
+    def client_epoch_reset(self, avg_state_dict):
+        self.list__target_train = []
+        self.list__output_train = []
+        self.loss = 0
+        self.batch_num = 0
+        if avg_state_dict is not None:
+            self.model.load_state_dict(avg_state_dict)
+
