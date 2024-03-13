@@ -75,7 +75,13 @@ class PI_Fed(AbstractServer):
                 mask[module_name][self.idx_task][name] = v
         self.mask = mask
 
-    def compute_global_weight(self, client_models: list):
+    def compute_global_weight(self, info: list):
+        client_models = []
+        client_losses = []
+        for info_item in info:
+            client_models.append(info_item['model'])
+            client_losses.append(info_item['losses'])
+        self.avg_loss = self.average_loss(client_losses)
         new_state_dict = self.average_weights(client_models)
         self.modify_state_dict(new_state_dict)
 
@@ -84,8 +90,36 @@ class FedAvg(AbstractServer):
         super().__init__(**client_args)
         self.avg_state_dict = root_state_dict
         self.avg_loss = 0
-    def compute_global_weight(self, client_models: list):
+    def compute_global_weight(self, info: list):
+        client_models = []
+        client_losses = []
+        for info_item in info:
+            client_models.append(info_item['model'])
+            client_losses.append(info_item['loss'])
+        self.avg_loss = self.average_loss(client_losses)
         self.avg_state_dict = self.average_weights(client_models)
+
+class FedNova(AbstractServer):
+    def __init__(self, client_args: Dict[str, Any], root_state_dict = None):
+        super().__init__(**client_args)
+        self.avg_state_dict = root_state_dict
+        self.avg_loss = 0
+
+
+    def nova_average(self):
+        pass
+
+    def compute_global_weight(self, info: list):
+        client_models = []
+        client_losses = []
+        client_coeffs = []
+        for info_item in info:
+            client_models.append(info_item['model'])
+            client_losses.append(info_item['loss'])
+            client_coeffs.append(info_item['coeff'])
+        self.avg_loss = self.average_loss(client_losses)
+
+
 
 
 

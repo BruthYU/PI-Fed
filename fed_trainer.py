@@ -89,14 +89,11 @@ class fed_task_train():
 
 
     def sever_epoch(self):
-        client_models = []
-        client_losses = []
+        info = []
         for client_id in range(self.num_clients):
-            info = self.clients[client_id].client_info()
-            client_models.append(info['model'])
-            client_losses.append(info['loss'])
-        self.server.compute_global_weight(client_models)
-        self.server.avg_loss = self.server.average_loss(client_losses)
+            info.append(self.clients[client_id].client_info())
+        self.server.compute_global_weight(info)
+        # self.server.avg_loss = self.server.average_loss(client_losses)
 
 
 

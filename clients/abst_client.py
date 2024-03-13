@@ -1,6 +1,7 @@
 from typing import *
 from torch import Tensor, nn, optim
 from copy import deepcopy
+from abc import abstractmethod
 class AbstractClient:
     def __init__(self, device: str, list__ncls: List[int], inputsize: Tuple[int, ...],
                  lr: float, lr_factor: float, lr_min: float, epochs_max: int, patience_max: int,
@@ -34,9 +35,9 @@ class AbstractClient:
     def batch_train(self,x,y):
         raise NotImplementedError("Batch_train() is not implemented.")
 
+    @abstractmethod
     def client_info(self):
-        info = {'model': self.model.state_dict(), 'loss':self.loss/self.batch_num}
-        return info
+        pass
 
     def compute_loss(self, output: Tensor, target: Tensor, misc: Dict[str, Any]) -> Tensor:
         reg = misc['reg']

@@ -25,7 +25,7 @@ class AbstractServer:
     def average_loss(self, list_losses):
         return sum(list_losses)/len(list_losses)
     @abstractmethod
-    def compute_global_weight(self, client_models: list):
+    def compute_global_weight(self, info: list):
         pass
 
 

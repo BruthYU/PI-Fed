@@ -112,6 +112,10 @@ class PI_Fed(AbstractClient):
                 # [module_name][idx_task][param_name][mask_tensor]
         return dict_module_mask
 
+    def client_info(self):
+        info = {'model': self.model.state_dict(), 'loss': self.loss / self.batch_num}
+        return info
+
 
 
 
@@ -146,16 +150,25 @@ class FedAvg(AbstractClient):
         if avg_state_dict is not None:
             self.model.load_state_dict(avg_state_dict)
 
+    def client_info(self):
+        info = {'model': self.model.state_dict(), 'loss': self.loss / self.batch_num}
+        return info
+
 class FedNova(AbstractClient):
     def __init__(self, client_args: Dict[str, Any], root_state_dict):
         super().__init__(**client_args)
         # Importance Computation will not be used
         self.model = ModelSPG(**client_args).to(self.device)
-        self.optimizer = optim.SGD(self.model.parameters(), lr=self.lr)
+
+        #Nova
+        self.rho = 0.9
+        self._momentum = self.rho
+        self.optimizer = optim.SGD(self.model.parameters(), lr=self.lr,momentum=self._momentum)
         if root_state_dict is not None:
             self.model.load_state_dict(root_state_dict)
         self.client_args = client_args
-    
+
+
     def batch_train(self, x, y):
         self.batch_num += 1
         args = {'idx_task': self.client_args['idx_task']}
@@ -170,3 +183,15 @@ class FedNova(AbstractClient):
         loss.backward()
         clip_grad_norm_(self.model.parameters(), max_norm=2., norm_type=2)
         self.optimizer.step()
+
+    def client_epoch_reset(self, avg_state_dict):
+        self.loss = 0
+        self.batch_num = 0
+        if avg_state_dict is not None:
+            self.model.load_state_dict(avg_state_dict)
+
+    def client_info(self):
+        tau = self.batch_num
+        coeff = (tau - self.rho * (1 - pow(self.rho, tau)) / (1 - self.rho)) / (1 - self.rho)
+        info = {'model': self.model.state_dict(), 'loss': self.loss / self.batch_num, 'coeff':coeff}
+        return info
