@@ -34,7 +34,7 @@ lr_factor: 3
 eps: 1e-3
 
 fed:
-  alg: FedAvg  # PI_Fed, FedAvg, FedNova, SCAFOLD
+  alg: PI_Fed  # PI_Fed, FedAvg, FedNova, SCAFOLD
   num_clients: [2, 2, 4, 2, 3, 4, 2, 3, 4, 2, 3, 2, 2, 4, 2, 4, 3, 4, 2, 2]
   task: img_cls # text_cls, img_cls
 
