@@ -1,3 +1,9 @@
+## TODO LIST
+- DEBUG FedNoVA 🪂
+- Implement SCAFOLD :fire::fire: 
+- Modify Eval Logic :art:
+- Draw Pictures
+
 # PI-Fed
 PI-Fed: Continual Federated Learning with Parameter-Level Importance Aggregation
 ## Datasets Preparation

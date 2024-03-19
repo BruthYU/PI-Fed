@@ -81,6 +81,11 @@ def load_dataloader(cfg: DictConfig) -> Dict[int, Dict[str, Any]]:
     return dict__idx_task__dataloader
 
 
+def initial_state_dict(client_args: Dict[str, Any]):
+    model = ModelSPG(**client_args).to(client_args["device"])
+    return model.state_dict()
+
+
 def continual_fed_train(cfg: DictConfig):
     print(f'device: {cfg.device}', bcolor=BColors.OKBLUE)
     # load dataset
@@ -91,7 +96,6 @@ def continual_fed_train(cfg: DictConfig):
     inputsize = dict__idx_task__dataloader[0]['inputsize']  # type: Tuple[int, ...]
 
     # load model
-    root_state_dict = None
     root_mask = None
     client_cfg = None
     if cfg.fed.task == 'img_cls':
@@ -116,6 +120,7 @@ def continual_fed_train(cfg: DictConfig):
     if client_cfg['backbone'] in ['alexnet']:
         client_cfg['drop1'] = drop_cfg.drop1
         client_cfg['drop2'] = drop_cfg.drop2
+    root_state_dict = initial_state_dict(client_cfg)
 
 
     eval_server = Eval(client_args=client_cfg)

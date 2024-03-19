@@ -82,7 +82,7 @@ class PI_Fed(AbstractServer):
         client_losses = []
         for info_item in info:
             client_models.append(info_item['model'])
-            client_losses.append(info_item['losses'])
+            client_losses.append(info_item['loss'])
         self.avg_loss = self.average_loss(client_losses)
         new_state_dict = self.average_weights(client_models)
         self.modify_state_dict(new_state_dict)
@@ -125,7 +125,7 @@ class FedNova(AbstractServer):
 
         avg_coeff = sum(client_coeffs)/len(client_models)
         for key in self.avg_state_dict:
-            self.avg_state_dict[key] -= avg_coeff * nova_grad
+            self.avg_state_dict[key] -= avg_coeff * nova_grad[key]
 
 
 
@@ -138,7 +138,7 @@ class FedNova(AbstractServer):
             client_losses.append(info_item['loss'])
             client_coeffs.append(info_item['coeff'])
         self.avg_loss = self.average_loss(client_losses)
-        self.nova_average(client_losses,client_coeffs)
+        self.nova_average(client_models, client_coeffs)
 
 
 

@@ -131,6 +131,8 @@ class FedAvg(AbstractClient):
 
     def batch_train(self, x, y):
         self.batch_num += 1
+        x = x.to(self.device)
+        y = y.to(self.device)
         args = {'idx_task': self.client_args['idx_task']}
         output, misc = self.model(x, args=args)
         loss = self.compute_loss(output=output, target=y, misc=misc)
@@ -171,6 +173,8 @@ class FedNova(AbstractClient):
 
     def batch_train(self, x, y):
         self.batch_num += 1
+        x = x.to(self.device)
+        y = y.to(self.device)
         args = {'idx_task': self.client_args['idx_task']}
         output, misc = self.model(x, args=args)
         loss = self.compute_loss(output=output, target=y, misc=misc)
