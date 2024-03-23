@@ -140,6 +140,8 @@ class FedNova(AbstractServer):
         self.avg_loss = self.average_loss(client_losses)
         self.nova_average(client_models, client_coeffs)
 
+#TODO
+
 
 
 
