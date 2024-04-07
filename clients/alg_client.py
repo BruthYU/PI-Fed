@@ -6,6 +6,10 @@ from models import *
 from torch import Tensor, nn, optim
 from torch.nn.utils import clip_grad_norm_
 import copy
+
+'''
+client_info() --> rec() in https://github.com/rruisong/pytorch_federated_learning
+'''
 class PI_Fed(AbstractClient):
     def __init__(self, client_args: Dict[str, Any], root_state_dict = None, root_mask = None):
         super().__init__(**client_args)
@@ -220,8 +224,7 @@ class FedSCAFFOLD(AbstractClient):
         self._momentum = 0.9
         self.optimizer = optim.SGD(self.model.parameters(), lr=self.lr, momentum=self._momentum)
 
-
-    def update(self, model_state_dict, scv_state):
+    def client_epoch_reset(self, model_state_dict, scv_state):
         """
         SCAFFOLD client updates local models and server control variate
         :param model_state_dict:
@@ -231,7 +234,6 @@ class FedSCAFFOLD(AbstractClient):
         self.scv.load_state_dict(scv_state)
         self.scv_state_dict = self.scv.state_dict()
         self.global_state_dict = copy.deepcopy(self.model.state_dict())
-
 
     def batch_train(self, x, y):
         self.batch_num += 1

@@ -59,7 +59,10 @@ class fed_task_train():
 
     def client_epoch_reset(self):
         for i in range(self.num_clients):
-            self.clients[i].client_epoch_reset(self.server.avg_state_dict)
+            if self.cfg.fed.alg == 'SCAFFOLD':
+                self.clients[i].client_epoch_reset(self.server.avg_state_dict, self.server.scv_state)
+            else:
+                self.clients[i].client_epoch_reset(self.server.avg_state_dict)
 
     # Global epochs = aggregation times
     def train(self):

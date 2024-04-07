@@ -142,6 +142,57 @@ class FedNova(AbstractServer):
 
 #TODO
 
+class FedSCAFFOLD(AbstractServer):
+    def __init__(self, client_args: Dict[str, Any], root_state_dict = None):
+        super().__init__(**client_args)
+        self.avg_loss = 0
+        self.avg_state_dict = root_state_dict
+
+        # server control variate
+        self.scv = ModelSPG(**client_args).to(self.device)
+        self.scv.load_state_dict(root_state_dict)
+        self.scv_state = self.scv.state_dict()
+
+        #
+
+
+
+    def scaffold_agg(self, client_state_dicts, client_new_ccvs):
+        new_avg_state = copy.deepcopy(self.avg_state_dict)
+        new_scv_state = copy.deepcopy(self.avg_state_dict)
+        for i, (model, client_ccv) in enumerate(zip(client_state_dicts, client_new_ccvs)):
+            for key in model:
+                if i == 0:
+                    new_scv_state[key] = model[key] / len(client_state_dicts)
+                    new_scv_state[key] = client_ccv[key] / len(client_state_dicts)
+                else:
+                    new_avg_state[key] = new_avg_state[key] + model[key] / len(client_state_dicts)
+                    new_scv_state[key] = new_scv_state + client_ccv[key] / len(client_state_dicts)
+        self.scv_state = self.scv.state_dict()
+        self.scv.load_state_dict(new_scv_state)
+        self.avg_state_dict = new_avg_state
+
+
+
+
+
+
+    def compute_global_weight(self, info: list):
+        client_state_dicts = []
+        client_losses = []
+        client_new_ccvs = []
+        for info_item in info:
+            client_state_dicts.append(info_item['state_dict'])
+            client_losses.append(info_item['loss'])
+            client_new_ccvs.append(info_item['new_ccv_state'])
+        self.avg_loss = self.average_loss(client_losses)
+        new_avg_state, new_scv_state  = self.scaffold_agg(client_state_dicts,client_new_ccvs)
+        return
+
+
+
+
+
 
 
 
