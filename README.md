@@ -1,11 +1,15 @@
-## TODO LIST
-- DEBUG FedNoVA 🪂
-- Implement SCAFOLD :fire::fire: 
-- Modify Eval Logic :art:
-- Draw Pictures
-
 # PI-Fed
 PI-Fed: Continual Federated Learning with Parameter-Level Importance Aggregation
+This repo contains the source code of our proposed PI-FED, a federated learning framework, which supports task-incremental learning on private datasets through iterative server-client communications. 
+Compared with 3 classic federated learning methods [[FedAvg, FedNova and SCAFFOLD](https://github.com/rruisong/pytorch_federated_learning)], PI-Fed demonstrates significantly better performance on continual FL benchmarks.
+
+## Introduction
+Due to the catastrophic forgetting feature of vanilla network optimizers, prior federated learning approaches are restricted to single task learning and typically assume that data from all nodes are simultaneously available during training, which are impractical in most real-world scenarios. 
+To overcome these limitations, we propose a continual federated learning framework with parameter-level importance aggregation PI-Fed, 
+which supports task-incremental learning on private datasets through iterative server-client communications.
+![main](./plot/figure/main_00.png)
+
+
 ## Datasets Preparation
 
 We use 9 datasets in the paper. To reproduce the results, some of these datasets need to be prepared manually.
