@@ -101,7 +101,8 @@ class fed_task_train():
 
 
     '''
-    Operations after the training of each subtask 
+    Operations after the training of each subtask
+    Accumulate LocalImportance 
     '''
     def clients_complete_learning(self):
 

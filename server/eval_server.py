@@ -6,6 +6,10 @@ from models import *
 from torch import Tensor, nn, optim
 import utils
 
+'''
+Latest Accuracy, Average Accuracy
+'''
+
 class Eval(AbstractServer):
     def __init__(self,client_args: Dict[str, Any]):
         super().__init__(**client_args)

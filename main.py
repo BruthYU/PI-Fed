@@ -135,6 +135,10 @@ def continual_fed_train(cfg: DictConfig):
         trainer = fed_task_train(task_dataloader, cfg, client_cfg, root_state_dict, root_mask)
         trainer.train()
         root_state_dict = trainer.server.avg_state_dict
+        if cfg.fed.alg == 'PI_Fed':
+            root_mask = trainer.server.root_mask
+
+
         eval_server.set_status(root_state_dict, task_id)
         avg_acc = []
         for t_prev in range(task_id + 1):
