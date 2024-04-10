@@ -203,7 +203,7 @@ class FedNova(AbstractClient):
         return info
 
 
-class FedSCAFFOLD(AbstractClient):
+class SCAFFOLD(AbstractClient):
     def __init__(self, client_args: Dict[str, Any], root_state_dict):
         super().__init__(**client_args)
         assert root_state_dict is not None, "root_state_dict is required (None)"
@@ -218,11 +218,10 @@ class FedSCAFFOLD(AbstractClient):
         self.ccv = ModelSPG(**client_args).to(self.device)
         self.ccv.load_state_dict(root_state_dict)
         self.ccv_state_dict = self.ccv.state_dict()
-
-
-
         self._momentum = 0.9
         self.optimizer = optim.SGD(self.model.parameters(), lr=self.lr, momentum=self._momentum)
+
+        self.client_args = client_args
 
     def client_epoch_reset(self, model_state_dict, scv_state):
         """
@@ -230,10 +229,13 @@ class FedSCAFFOLD(AbstractClient):
         :param model_state_dict:
         :param scv_state:
         """
-        self.model.load_state_dict(model_state_dict)
+        self.loss = 0
+        self.batch_num = 0
         self.scv.load_state_dict(scv_state)
         self.scv_state_dict = self.scv.state_dict()
-        self.global_state_dict = copy.deepcopy(self.model.state_dict())
+        if model_state_dict is not None:
+            self.model.load_state_dict(model_state_dict)
+
 
     def batch_train(self, x, y):
         self.batch_num += 1
@@ -257,21 +259,18 @@ class FedSCAFFOLD(AbstractClient):
             state_dict[key] = state_dict[key] - self.lr * (self.scv_state_dict[key] - self.ccv_state_dict[key])
         self.model.load_state_dict(state_dict)
 
-    def client_epoch_reset(self, avg_state_dict):
-        self.loss = 0
-        self.batch_num = 0
-        if avg_state_dict is not None:
-            self.model.load_state_dict(avg_state_dict)
+
 
     def client_info(self):
         delta_model_state = copy.deepcopy(self.model.state_dict())
+        global_state_dict = copy.deepcopy(self.model.state_dict())
         new_ccv_state = copy.deepcopy(self.ccv.state_dict())
         delta_ccv_state = copy.deepcopy(new_ccv_state)
         state_dict = self.model.state_dict()
         for key in state_dict:
-            new_ccv_state[key] = self.ccv_state_dict[key] - self.scv_state_dict[key] + (self.global_state_dict[key] - state_dict[key]) / (self.batch_num * self.lr)
+            new_ccv_state[key] = self.ccv_state_dict[key] - self.scv_state_dict[key] + (global_state_dict[key] - state_dict[key]) / (self.batch_num * self.lr)
             delta_ccv_state[key] = new_ccv_state[key] - self.ccv_state_dict[key]
-            delta_model_state[key] = state_dict[key] - self.global_state_dict[key]
+            delta_model_state[key] = state_dict[key] - global_state_dict[key]
         self.ccv.load_state_dict(new_ccv_state)
         self.ccv_state_dict = self.ccv.state_dict()
         info = {'state_dict': state_dict, 'loss': self.loss / self.batch_num, 'new_ccv_state':new_ccv_state}
