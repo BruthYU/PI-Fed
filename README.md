@@ -7,7 +7,7 @@ Compared with 3 classic federated learning methods [[FedAvg, FedNova and SCAFFOL
 Due to the catastrophic forgetting feature of vanilla network optimizers, prior federated learning approaches are restricted to single task learning and typically assume that data from all nodes are simultaneously available during training, which are impractical in most real-world scenarios. 
 To overcome these limitations, we propose a continual federated learning framework with parameter-level importance aggregation PI-Fed, 
 which supports task-incremental learning on private datasets through iterative server-client communications.
-![main](./plot/figure/main_00.png)
+![main](./plot/figure/main_01.png)
 
 
 ## Datasets Preparation
