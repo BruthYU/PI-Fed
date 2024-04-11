@@ -16,6 +16,24 @@ from omegaconf import DictConfig
 from optuna import Trial
 from torch import Tensor, optim
 
+class AlgInfo:
+    def __init__(self, alg_name, task_name):
+        self.alg_name = alg_name
+        self.task_name = task_name
+        self.task_num = 0
+        self.latest_acc = []
+        self.latest_loss = []
+        self.average_acc = []
+
+
+    def add_info(self, latest_acc, latest_loss, average_acc):
+        self.task_num += 1
+        self.latest_acc.append(latest_acc)
+        self.latest_loss.append(latest_loss)
+        self.average_acc.append(average_acc)
+
+    def get_info(self, which_finished: int):
+        return self.latest_acc[which_finished], self.latest_loss[which_finished], self.average_acc[which_finished]
 
 class BColors(Enum):
     HEADER = '\033[95m'

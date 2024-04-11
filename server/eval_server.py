@@ -17,6 +17,7 @@ class Eval(AbstractServer):
         self.model = ModelSPG(**client_args).to(self.device)
         self.root_state_dict = None
 
+
     def set_status(self, root_state_dict, idx_task_learned):
         self.root_state_dict = root_state_dict
         self.idx_task = idx_task_learned

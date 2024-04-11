@@ -12,13 +12,14 @@ import torch
 import copy
 from omegaconf import DictConfig, OmegaConf
 from dataloader import get_shuffled_dataloder
-from utils import BColors, myprint as print, suggest_float, suggest_int
+from utils import BColors, myprint as print, suggest_float, suggest_int, AlgInfo
 from optuna import Trial
 import logging
 from clients import *
 from models import *
 from fed_trainer import *
 from server import Eval
+import pickle
 def uuid(digits=4):
     if not hasattr(uuid, "uuid_value"):
         uuid.uuid_value = struct.unpack('I', os.urandom(4))[0] % int(10 ** digits)
@@ -124,6 +125,7 @@ def continual_fed_train(cfg: DictConfig):
 
 
     eval_server = Eval(client_args=client_cfg)
+    algInfo = AlgInfo(cfg.fed.alg, cfg.seq.name)
 
     '''
     For every subtask, the trainer will assign num_client[task_id] clients
@@ -147,7 +149,15 @@ def continual_fed_train(cfg: DictConfig):
             acc_test = results_test['acc_test']
             avg_acc.append(acc_test)
             LOG.info(f'Test task {t_prev} | loss_test: {loss_test} | acc_test: {acc_test}')
+            if t_prev == task_id:
+                algInfo.add_info(acc_test, loss_test, sum(avg_acc) / (task_id + 1))
+
         LOG.info(f'[Task learned : {task_id+1}] [Current average acc: {sum(avg_acc)/(task_id + 1)}]')
+
+    with open(f'alg_info.pkl', 'wb') as f:
+        pickle.dump(algInfo, f)
+
+
 
 
 # TODO scheduler
