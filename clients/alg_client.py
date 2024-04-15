@@ -218,8 +218,8 @@ class SCAFFOLD(AbstractClient):
         self.ccv = ModelSPG(**client_args).to(self.device)
         self.ccv.load_state_dict(root_state_dict)
         self.ccv_state_dict = self.ccv.state_dict()
-        self._momentum = 0.9
-        self.optimizer = optim.SGD(self.model.parameters(), lr=self.lr, momentum=self._momentum)
+
+        self.optimizer = optim.SGD(self.model.parameters(), lr=self.lr)
 
         self.client_args = client_args
 

@@ -1,25 +1,16 @@
-import hydra
 import os
 import pickle
-import tempfile
-from datetime import datetime
-from typing import *
-import hydra
 import struct
-import mlflow
-import optuna
-import torch
-import copy
-from omegaconf import DictConfig, OmegaConf
+
+import hydra
+
 from dataloader import get_shuffled_dataloder
-from utils import BColors, myprint as print, suggest_float, suggest_int, AlgInfo
-from optuna import Trial
-import logging
-from clients import *
-from models import *
 from fed_trainer import *
+from models import *
 from server import Eval
-import pickle
+from utils import BColors, AlgInfo
+
+
 def uuid(digits=4):
     if not hasattr(uuid, "uuid_value"):
         uuid.uuid_value = struct.unpack('I', os.urandom(4))[0] % int(10 ** digits)
@@ -38,6 +29,7 @@ def load_dataloader(cfg: DictConfig) -> Dict[int, Dict[str, Any]]:
     dirpath_data = os.path.join(hydra.utils.get_original_cwd(), 'data')
     # load data
     filepath_pkl = os.path.join(dirpath_data, f'{basename_data}.pkl')
+    # if False:
     if os.path.exists(filepath_pkl):
         with open(filepath_pkl, 'rb') as f:
             dict__idx_task__dataloader = pickle.load(f)
@@ -138,7 +130,7 @@ def continual_fed_train(cfg: DictConfig):
         trainer.train()
         root_state_dict = trainer.server.avg_state_dict
         if cfg.fed.alg == 'PI_Fed':
-            root_mask = trainer.server.root_mask
+            root_mask = trainer.server.mask
 
 
         eval_server.set_status(root_state_dict, task_id)

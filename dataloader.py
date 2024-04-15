@@ -170,7 +170,7 @@ def _get_dataloaders(cfg: DictConfig) -> Dict[int, Dict[str, Any]]:
                                                       'test': {'x': [], 'y': []}}
                                            for idx_task in range(num_tasks)}
                 for tvt, dataset in [('trainval', dataset_trainval), ('test', dataset_test)]:
-                    for _, image, y in dataset:
+                    for image, y in dataset:
                         idx_task = [t for t in range(num_tasks) if y in dict__idx_task__classes[t]]
                         assert len(idx_task) == 1
                         idx_task = idx_task[0]
@@ -179,6 +179,7 @@ def _get_dataloaders(cfg: DictConfig) -> Dict[int, Dict[str, Any]]:
 
                         dict__idx_task__dataset[idx_task][tvt]['x'].append(image)
                         dict__idx_task__dataset[idx_task][tvt]['y'].append(label)
+                        pass
                     # endfor
 
                     for idx_task in range(num_tasks):
