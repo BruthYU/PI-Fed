@@ -14,26 +14,25 @@ colors = []
 if args.plot_type == 'latest':
     attr_name = 'latest_acc'
     colors = ['blue', 'red', 'orange', 'green']
-    task_y_lim = {'cifar100_10':(0.18, 0.95), 'cifar100_20':(0.18, 0.95),
-                  'tinyimagenet_10':(0.08, 0.70), 'tinyimagenet_20':(0.08, 0.80)}
+    task_y_lim = {'fceleba_10':(0.40, 1.05), 'fceleba_20':(0.40, 1.05),
+                  'femnist_10':(0.40, 1.05), 'femnist_20':(0.4, 1.05)}
     y_label = 'Latest Acc.'
     y_locator = 0.2
-
 elif args.plot_type == 'average':
     attr_name = 'average_acc'
     sns.set_style('darkgrid')
     colors = ['blue', 'red', 'orange', 'green']
-    task_y_lim = {'cifar100_10': (0.60, 0.80), 'cifar100_20': (0.60, 0.80),
-                  'tinyimagenet_10': (0.40, 0.55), 'tinyimagenet_20': (0.45, 0.75)}
+    task_y_lim = {'fceleba_10':(0.6, 0.95), 'fceleba_20':(0.6, 0.95),
+                  'femnist_10':(0.6, 0.95), 'femnist_20':(0.5, 1.00)}
     y_label = 'Average Acc.'
-    y_locator = 0.05
+    y_locator = 0.1
 else:
     raise ValueError(f"No plot type named {args.plot_type}")
 
 
 
 method_names = ['PI_Fed', 'FedAvg', 'FedNova', 'SCAFFOLD']
-task_names = ['cifar100_10', 'cifar100_20', 'tinyimagenet_10', 'tinyimagenet_20']
+task_names = ['fceleba_10', 'fceleba_20', 'femnist_10', 'femnist_20']
 
 
 method_dicts = {}
@@ -72,7 +71,7 @@ for t_idx, t_name in enumerate(task_names):
     for m_idx, m_name in enumerate(method_names):
         ys = getattr(method_dicts[t_name][m_name], attr_name)
         label = m_name if m_name is not 'PI_Fed' else 'PI-Fed'
-        linestyle = 'solid' if m_name is not 'FedNova' else 'dashed'
+        linestyle = 'solid'
         axs[plot_count].plot(t, ys, label = label,linewidth=1.5,color=colors[m_idx],linestyle=linestyle)
     axs[plot_count].set_xlim(0,int(t_name[-2:])+1)
     axs[plot_count].set_ylim(task_y_lim[t_name][0], task_y_lim[t_name][1])
@@ -92,6 +91,6 @@ plt.subplots_adjust(wspace=0.5)
 plt.subplots_adjust(wspace=0.5)
 plt.subplots_adjust(bottom=0.3)
 
-plt.savefig(f'./figure/Dissimilar_{args.plot_type}.jpg')
+plt.savefig(f'./figure/Similar_{args.plot_type}.jpg')
 
 # plt.show()
