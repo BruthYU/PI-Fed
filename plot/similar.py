@@ -8,7 +8,7 @@ parser.add_argument('--plot_type', required=True, type=str)
 args = parser.parse_args()
 from matplotlib.ticker import (AutoMinorLocator, MultipleLocator)
 
-
+print(f"------Plot Type: {args.plot_type}-------")
 attr_name = ''
 colors = []
 if args.plot_type == 'latest':
@@ -61,7 +61,7 @@ plot_count = 0
 
 
 
-alias_names = ['C-10', 'C-20','T-10', 'T-20']
+alias_names = ['FC-10', 'FC-20','FE-10', 'FE-20']
 
 marker_names = ['o', 's','D', '*']
 
@@ -70,6 +70,7 @@ for t_idx, t_name in enumerate(task_names):
     t = range(1, int(t_name[-2:])+1)
     for m_idx, m_name in enumerate(method_names):
         ys = getattr(method_dicts[t_name][m_name], attr_name)
+        print(f"t_name: {t_name}, m_name: {m_name}, final avg: {ys[-1]}")
         label = m_name if m_name is not 'PI_Fed' else 'PI-Fed'
         linestyle = 'solid'
         axs[plot_count].plot(t, ys, label = label,linewidth=1.5,color=colors[m_idx],linestyle=linestyle)
@@ -77,7 +78,7 @@ for t_idx, t_name in enumerate(task_names):
     axs[plot_count].set_ylim(task_y_lim[t_name][0], task_y_lim[t_name][1])
     axs[plot_count].xaxis.set_major_locator(MultipleLocator(int(t_name[-2:])/5))
     axs[plot_count].yaxis.set_major_locator(MultipleLocator(y_locator))
-    axs[plot_count].set_xlabel('Task Learned', fontweight='bold', family = 'serif')
+    axs[plot_count].set_xlabel('Tasks Learned', fontweight='bold', family = 'serif')
     axs[plot_count].set_ylabel(y_label,fontweight='bold',family = 'serif')
     axs[plot_count].set_title(f'{alias_names[t_idx]}', fontweight='bold', family='serif')
     axs[plot_count].grid(True)
