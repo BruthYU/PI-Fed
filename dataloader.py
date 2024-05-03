@@ -339,6 +339,8 @@ class FCelebA(Dataset):
         self.dir_data_task = os.path.join(self.dir_fceleba, str(num_tasks))
         os.makedirs(self.dir_data_task, exist_ok=True)
 
+        self.count = 0
+
         # buffer
         self.list__data = []
 
@@ -353,7 +355,13 @@ class FCelebA(Dataset):
         x = Image.open(os.path.join(self.dir_fceleba, 'raw', 'img_align_celeba', data['filename']))
         y = data['y']
 
-        return idx_task, self.transforms(x), y
+        if self.count < 200:
+            DIR_CWD = hydra.utils.get_original_cwd()
+            x.save(os.path.join(DIR_CWD, f'data/fceleba/pic/task={idx_task}_idx={idx}.jpg'))
+            self.count +=1
+
+        # return idx_task, self.transforms(x), y
+        return  self.transforms(x), y
     # enddef
 
     def __len__(self) -> int:
@@ -439,6 +447,7 @@ class FEMNIST(Dataset):
         self.dir_fceleba = os.path.join(root, 'femnist')
         self.dir_data_task = os.path.join(self.dir_fceleba, str(num_tasks))
         os.makedirs(self.dir_data_task, exist_ok=True)
+        self.count = 0
 
         # buffer
         self.list__data = []
@@ -452,9 +461,14 @@ class FEMNIST(Dataset):
 
         idx_task = data['idx_task']
         x = transforms.functional.to_pil_image(torch.tensor(data['x']).resize(1, 28, 28))
+        if self.count < 200:
+            DIR_CWD = hydra.utils.get_original_cwd()
+            x.save(os.path.join(DIR_CWD, f'data/femnist/pic/task={idx_task}_idx={idx}.jpg'))
+            self.count +=1
         y = data['y']
 
-        return idx_task, self.transforms(x), y
+        # return idx_task, self.transforms(x), y
+        return self.transforms(x), y
     # enddef
 
     def __len__(self) -> int:
