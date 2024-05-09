@@ -6,7 +6,7 @@ from models import *
 from torch import Tensor, nn, optim
 from torch.nn.utils import clip_grad_norm_
 import copy
-
+import torchinfo
 '''
 client_info() --> rec() in https://github.com/rruisong/pytorch_federated_learning
 '''
@@ -19,7 +19,10 @@ class PI_Fed(AbstractClient):
             self.model.load_state_dict(root_state_dict)
         if root_mask is not None:
             self.model.load_mask(root_mask)
+
+
         self.optimizer = optim.SGD(self.model.parameters(), lr=self.lr)
+
 
 
 
@@ -106,15 +109,19 @@ class PI_Fed(AbstractClient):
 
 
     def post_complete_learning(self) -> Dict[str, Dict]:
+
         dict_module_mask = {}
+
         for name, module in self.model.named_modules():
             if isinstance(module, SPG):
                 module.compute_mask(idx_task=self.client_args['idx_task'])
                 dict_module_mask[name] = module.history_mask
                 # [module_name][idx_task][param_name][mask_tensor]
+
         return dict_module_mask
 
     def client_info(self):
+        # mem_info =  torchinfo.summary(self.model)
         info = {'model': self.model.state_dict(), 'loss': self.loss / self.batch_num}
         return info
 

@@ -9,7 +9,7 @@ from fed_trainer import *
 from models import *
 from server import Eval
 from utils import BColors, AlgInfo
-
+import time
 
 def uuid(digits=4):
     if not hasattr(uuid, "uuid_value"):
@@ -106,8 +106,9 @@ def continual_fed_train(cfg: DictConfig):
         'idx_task': 0,
         'epochs_client': cfg.epochs_client,
         'lamb': 0,
-        'eps': cfg.eps
+        'eps': cfg.eps,
         }
+
     task_name = cfg.seq.name
     drop_cfg = cfg.appr.tuned[task_name]
     if client_cfg['backbone'] in ['alexnet']:
@@ -118,6 +119,8 @@ def continual_fed_train(cfg: DictConfig):
 
     eval_server = Eval(client_args=client_cfg)
     algInfo = AlgInfo(cfg.fed.alg, cfg.seq.name)
+
+    start_time = time.time()
 
     '''
     For every subtask, the trainer will assign num_client[task_id] clients
@@ -145,6 +148,9 @@ def continual_fed_train(cfg: DictConfig):
                 algInfo.add_info(acc_test, loss_test, sum(avg_acc) / (task_id + 1))
 
         LOG.info(f'[Task learned : {task_id+1}] [Current average acc: {sum(avg_acc)/(task_id + 1)}]')
+    end_time = time.time()
+    execution_time = end_time - start_time
+    LOG.info(f'Total Runing Time: {execution_time} s')
 
     with open(f'alg_info.pkl', 'wb') as f:
         pickle.dump(algInfo, f)
