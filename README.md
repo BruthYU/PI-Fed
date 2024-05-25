@@ -10,9 +10,36 @@ which supports task-incremental learning on private datasets through iterative s
 ![main](./plot/main_01.png)
 
 
+## Experiments
+Different FL methods (PI-Fed, FedAvg, FedNova and SCAFFOLD) could be specified with
+```yaml
+# PI-Fed/conf/config.yaml
+fed:
+  alg:  SCAFFOLD # PI_Fed, FedAvg, FedNova, SCAFFOLD
+```
+
+Experiments can be reproduced by running
+
+```shell
+python3 main.py appr=default seq=<seq> 
+```
+
+with specifying `<seq>` for a dataset you want to run.
+
+For `<seq>`, you can choose one from the following datasets.
+
+- `cifar100_10` for **C-10** (CIFAR100 with 10 tasks)
+- `cifar100_20` for **C-20**
+- `tinyimagenet_10` for **T-10** (TinyImageNet with 10 tasks)
+- `tinyimagenet_20` for **T-20**
+- `fceleba_10` for **FC-10** (Federated CelebA with 10 tasks)
+- `fceleba_20` for **FC-20**
+- `femnist_10` for **FE-10** (Federated EMNIST with 10 tasks)
+- `femnist_20` for **FE-20**
+
 ## Datasets Preparation
 
-We use 9 datasets in the paper. To reproduce the results, some of these datasets need to be prepared manually.
+We use 4 datasets in the paper. To reproduce the results, some of these datasets need to be prepared manually.
 
 ### CIFAR100-based (**C-10** and **C-20**)
 
@@ -56,23 +83,7 @@ data/tiny-imagenet-200/
    +- # These files are not used any more. 
 </pre>
 
-### ImageNet-based (**I-100**)
 
-You can download the datasets from [the official site](https://image-net.org/).
-
-1. Download the downsampled image data (32x32).
-2. Extract the files, and place the extracted files under `./data/imagenet/`.
-3. Make sure you see the structure as follows.
-
-<pre>
-data/imagenet/
-|- test/
-|  +- val_data
-+- train/
-   |- train_data_batch_1
-   |- ...
-   +- train_data_batch_10
-</pre>
 
 ### Federated CelebA-based (**FC-10** and **FC-20**)
 
@@ -118,24 +129,5 @@ data/femnist/
 <pre>
 ./preprocess.sh -s iid --sf 1.0 -k 0 -t sample
 </pre>
-## Experiments
 
-Experiments can be reproduced by running
 
-```shell
-python3 main.py appr=spg seq=<seq> 
-```
-
-with specifying `<seq>` for a dataset you want to run.
-
-For `<seq>`, you can choose one from the following datasets.
-
-- `cifar100_10` for **C-10** (CIFAR100 with 10 tasks)
-- `cifar100_20` for **C-20**
-- `tinyimagenet_10` for **T-10** (TinyImageNet with 10 tasks)
-- `tinyimagenet_20` for **T-20**
-- `imagenet_100` for **I-100** (ImageNet with 100 tasks)
-- `fceleba_10` for **FC-10** (Federated CelebA with 10 tasks)
-- `fceleba_20` for **FC-20**
-- `femnist_10` for **FE-10** (Federated EMNIST with 10 tasks)
-- `femnist_20` for **FE-20**
