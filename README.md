@@ -15,7 +15,7 @@ Different FL methods (PI-Fed, FedAvg, FedNova and SCAFFOLD) could be specified w
 ```yaml
 # PI-Fed/conf/config.yaml
 fed:
-  alg:  SCAFFOLD # PI_Fed, FedAvg, FedNova, SCAFFOLD
+  alg:  PI_Fed # PI_Fed, FedAvg, FedNova, SCAFFOLD
 ```
 
 Experiments can be reproduced by running
