@@ -1,4 +1,4 @@
-**2024/08/07:** Repo has been transferred to [ECNU-ICALK/MELO](https://github.com/ECNU-ICALK/PI-Fed (Organization Account) 🔔
+-**2024/08/07:** Repo has been transferred to [ECNU-ICALK/MELO](https://github.com/ECNU-ICALK/PI-Fed (Organization Account) 🔔
 # PI-Fed
 
 PI-Fed: Continual Federated Learning with Parameter-Level Importance Aggregation
